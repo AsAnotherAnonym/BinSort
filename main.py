@@ -14,6 +14,9 @@ import os
 import sys
 from enum import Enum, auto
 
-if __name__ == "__main__":
+def main():
     game = GameManager()
     game.run()
+
+if __name__ == "__main__":
+    main()
