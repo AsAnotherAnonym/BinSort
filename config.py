@@ -31,6 +31,7 @@ class GameState(Enum):
     PLAYING = auto()
     PAUSED = auto()
     GAME_OVER = auto()
+    GAME_FINISHED = auto()
 
 
 class TrashType(Enum):

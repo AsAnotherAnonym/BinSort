@@ -61,6 +61,10 @@ class GameManager:
                          "RESTART", "restart", Config.GOLD),
                 UIElement(Config.SCREEN_WIDTH//2 - 120, 370, 240, 50, 
                          "MENU", "goto_level_select", Config.RED)
+            ],
+            "game_finished": [
+                UIElement(Config.SCREEN_WIDTH//2 - 120, 300, 240, 50, 
+                         "CONTINUE", "goto_level_select", Config.GREEN)
             ]
         }
         
@@ -167,8 +171,10 @@ class GameManager:
         
         # Check level complete
         if self.spawner.is_finished() and not self.trash_group and self.player.is_alive():
+            self.state = GameState.GAME_FINISHED
+            # Unlock next level
             self.save.unlock_level(self.current_level_num + 1)
-            self.state = GameState.LEVEL_SELECT
+            # self.state = GameState.LEVEL_SELECT
     
     def draw_title_screen(self, mouse_pos):
         self.screen.blit(self.bg_menu, (0, 0))
@@ -255,6 +261,21 @@ class GameManager:
         for btn in self.buttons["game_over"]:
             btn.check_hover(mouse_pos)
             btn.draw(self.screen, self.ui)
+
+    def draw_game_finished(self, mouse_pos):
+        """Draw game finished screen"""
+        # Dim overlay
+        self.draw_gameplay()
+        s = pygame.Surface((Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT), pygame.SRCALPHA)
+        s.fill((0, 0, 0, 128))
+        self.screen.blit(s, (0, 0))
+        
+        self.ui.draw_text(self.screen, "LEVEL COMPLETE!", 50, 
+                         Config.SCREEN_WIDTH//2, 200, Config.GREEN, True)
+        
+        for btn in self.buttons["game_finished"]:
+            btn.check_hover(mouse_pos)
+            btn.draw(self.screen, self.ui)
     
     def run(self):
         running = True
@@ -284,6 +305,8 @@ class GameManager:
                         active_btns = self.buttons["paused"]
                     elif self.state == GameState.GAME_OVER:
                         active_btns = self.buttons["game_over"]
+                    elif self.state == GameState.GAME_FINISHED:
+                        active_btns = self.buttons["game_finished"]
                     
                     for btn in active_btns:
                         if btn.check_hover(mouse_pos):
@@ -309,6 +332,11 @@ class GameManager:
                             self.start_level(self.current_level_num)
                         elif event.key == pygame.K_b:
                             self.state = GameState.LEVEL_SELECT
+                    
+                    # Game finished shortcut
+                    if self.state == GameState.GAME_FINISHED:
+                        if event.key == pygame.K_b:
+                            self.state = GameState.LEVEL_SELECT
             
             # Update
             self.cursor.update()
@@ -331,6 +359,8 @@ class GameManager:
                 self.draw_paused(mouse_pos)
             elif self.state == GameState.GAME_OVER:
                 self.draw_game_over(mouse_pos)
+            elif self.state == GameState.GAME_FINISHED:
+                self.draw_game_finished(mouse_pos)
             
             # Always draw cursor on top
             self.cursor.draw(self.screen)
